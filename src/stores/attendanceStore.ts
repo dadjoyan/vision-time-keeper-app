@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
@@ -21,6 +20,18 @@ export interface User {
   createdAt: Date;
 }
 
+export interface Camera {
+  id: string;
+  name: string;
+  source: 'usb' | 'ip';
+  ipAddress?: string;
+  resolution: '720p' | '1080p';
+  frameRate: number;
+  confidenceThreshold: number;
+  purpose: 'entry' | 'exit' | 'both';
+  isActive: boolean;
+}
+
 export interface CameraSettings {
   source: 'usb' | 'ip';
   ipAddress?: string;
@@ -40,7 +51,13 @@ interface AttendanceState {
   attendanceRecords: AttendanceRecord[];
   addAttendanceRecord: (record: Omit<AttendanceRecord, 'id'>) => void;
   
-  // Camera Settings
+  // Multiple Cameras
+  cameras: Camera[];
+  addCamera: (camera: Omit<Camera, 'id'>) => void;
+  updateCamera: (id: string, camera: Partial<Camera>) => void;
+  deleteCamera: (id: string) => void;
+
+  // Camera Settings (legacy - keeping for backward compatibility)
   cameraSettings: CameraSettings;
   updateCameraSettings: (settings: Partial<CameraSettings>) => void;
 
@@ -57,6 +74,7 @@ export const useAttendanceStore = create<AttendanceState>()(
       // Initial state
       users: [],
       attendanceRecords: [],
+      cameras: [],
       cameraSettings: {
         source: 'usb',
         resolution: '720p',
@@ -93,7 +111,25 @@ export const useAttendanceStore = create<AttendanceState>()(
         }, ...state.attendanceRecords]
       })),
 
-      // Camera settings
+      // Multiple Cameras management
+      addCamera: (camera) => set((state) => ({
+        cameras: [...state.cameras, {
+          ...camera,
+          id: Date.now().toString(),
+        }]
+      })),
+
+      updateCamera: (id, updatedCamera) => set((state) => ({
+        cameras: state.cameras.map(camera => 
+          camera.id === id ? { ...camera, ...updatedCamera } : camera
+        )
+      })),
+
+      deleteCamera: (id) => set((state) => ({
+        cameras: state.cameras.filter(camera => camera.id !== id)
+      })),
+
+      // Camera settings (legacy)
       updateCameraSettings: (settings) => set((state) => ({
         cameraSettings: { ...state.cameraSettings, ...settings }
       })),
