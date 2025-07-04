@@ -3,21 +3,29 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { Camera, Users, BarChart3, Settings, Calendar, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAttendanceStore } from '@/stores/attendanceStore';
 
 interface SidebarProps {
   isCollapsed: boolean;
 }
 
-const menuItems = [
-  { path: '/', icon: BarChart3, label: 'داشبورد', color: 'text-blue-600' },
-  { path: '/live-camera', icon: Camera, label: 'دوربین زنده', color: 'text-green-600' },
-  { path: '/attendance', icon: Calendar, label: 'گزارش حضور', color: 'text-purple-600' },
-  { path: '/users', icon: Users, label: 'مدیریت کاربران', color: 'text-orange-600' },
-  { path: '/settings', icon: Settings, label: 'تنظیمات', color: 'text-gray-600' },
-  { path: '/security', icon: Shield, label: 'امنیت', color: 'text-red-600' },
+const allMenuItems = [
+  { path: '/', icon: BarChart3, label: 'داشبورد', color: 'text-blue-600', roles: ['admin', 'operator'] },
+  { path: '/live-camera', icon: Camera, label: 'دوربین زنده', color: 'text-green-600', roles: ['admin', 'operator'] },
+  { path: '/attendance', icon: Calendar, label: 'گزارش حضور', color: 'text-purple-600', roles: ['admin', 'operator'] },
+  { path: '/users', icon: Users, label: 'مدیریت کاربران', color: 'text-orange-600', roles: ['admin'] },
+  { path: '/settings', icon: Settings, label: 'تنظیمات', color: 'text-gray-600', roles: ['admin'] },
+  { path: '/security', icon: Shield, label: 'امنیت', color: 'text-red-600', roles: ['admin'] },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
+  const { currentUser } = useAttendanceStore();
+
+  // فیلتر منوها بر اساس نقش کاربر
+  const menuItems = allMenuItems.filter(item => 
+    currentUser && item.roles.includes(currentUser.role)
+  );
+
   return (
     <div className={cn(
       "bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ease-in-out",
@@ -39,6 +47,25 @@ export const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
             </div>
           )}
         </div>
+
+        {/* نمایش اطلاعات کاربر */}
+        {!isCollapsed && currentUser && (
+          <div className="mb-6 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+                <span className="text-white text-xs font-medium">
+                  {currentUser.name.charAt(0)}
+                </span>
+              </div>
+              <div>
+                <div className="text-sm font-medium">{currentUser.name}</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  {currentUser.role === 'admin' ? 'مدیر' : 'اپراتور'}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         <nav className="space-y-2">
           {menuItems.map((item) => (
