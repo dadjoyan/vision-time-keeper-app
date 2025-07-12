@@ -1,10 +1,11 @@
 
 import React from 'react';
-import { Menu, Bell, User, Moon, Sun, LogOut } from 'lucide-react';
+import { Menu, Moon, Sun, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Badge } from '@/components/ui/badge';
 import { useAttendanceStore } from '@/stores/attendanceStore';
+import { NotificationPanel } from '@/components/Notifications/NotificationPanel';
+import { UserProfile } from '@/components/Profile/UserProfile';
 
 interface HeaderProps {
   onToggleSidebar: () => void;
@@ -36,12 +37,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
       </div>
 
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="sm" className="relative">
-          <Bell className="w-5 h-5" />
-          <Badge className="absolute -top-1 -right-1 w-5 h-5 p-0 flex items-center justify-center text-xs">
-            3
-          </Badge>
-        </Button>
+        <NotificationPanel />
 
         <Button
           variant="ghost"
@@ -54,16 +50,14 @@ export const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="sm" className="flex items-center gap-2">
-              <User className="w-5 h-5" />
               <span className="hidden md:inline text-sm">
                 {currentUser?.name || 'کاربر مهمان'}
               </span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem className="flex items-center gap-2">
-              <User className="w-4 h-4" />
-              پروفایل کاربری
+            <DropdownMenuItem asChild>
+              <UserProfile />
             </DropdownMenuItem>
             <DropdownMenuItem 
               onClick={handleLogout}
